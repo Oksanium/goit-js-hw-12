@@ -12,50 +12,73 @@ import 'izitoast/dist/css/iziToast.min.css';
 import errIcon from './img/cross-icon.svg';
 import closeIcon from './img/cross.svg';
 
-const modalOptions = {
+const lightbox = new SimpleLightbox('.gallery a', {
   captionsData: 'alt',
   captionDelay: 250,
-};
-const lightbox = new SimpleLightbox('.gallery a', modalOptions);
+});
 
 const loader = document.querySelector('.loader-wrapper');
-
+const moreBtn = document.querySelector('.load-more');
 const gallery = document.querySelector('.gallery');
-
 const form = document.querySelector('.form');
 form.addEventListener('submit', onSubmit);
 
-async function onSubmit(evt) {
+let userQuery = '';
+let page = 1;
+
+function onSubmit(evt) {
   evt.preventDefault();
   gallery.innerHTML = '';
-  const userQuery = form.querySelector('input').value;
+  hideElem(moreBtn);
+  page = 1;
+  userQuery = form.querySelector('input').value;
   if (userQuery === '') return;
-
-  showLoader();
-  try {
-    const { data } = await getPhotos(userQuery);
-    if (data.hits.length === 0) {
-      console.log('in if');
-      showRedToast();
-    } else {
-      gallery.innerHTML = render(data.hits);
-      lightbox.refresh();
-    }
-  } catch (err) {
-    console.log('in catch');
-    showRedToast();
-  }
-  hideLoader();
+  buildGallery();
 }
 
-function showRedToast() {
+async function buildGallery() {
+  hideElem(moreBtn);
+  showElem(loader);
+  try {
+    const { data } = await getPhotos(userQuery, page);
+    console.log(data);
+    if (data.hits.length === 0) {
+      showRedToast();
+    } else {
+      gallery.insertAdjacentHTML('beforeend', render(data.hits));
+      lightbox.refresh();
+      if (data.totalHits > page * 15) {
+        showElem(moreBtn);
+      } else {
+        showToastThatsIt();
+      }
+    }
+  } catch (err) {
+    showRedToast();
+  }
+  hideElem(loader);
+}
+
+moreBtn.addEventListener('click', loadMore);
+
+function loadMore() {
+  page += 1;
+  buildGallery();
+}
+function showElem(elem) {
+  elem.setAttribute('style', 'display: flex;');
+}
+function hideElem(elem) {
+  elem.setAttribute('style', 'display: none;');
+}
+function showToast(text, color, icon) {
   iziToast.show({
-    title: `Sorry, there are no images matching<br>your search query. Please, try again!`,
-    backgroundColor: '#EF4040',
+    title: text,
+    backgroundColor: color,
     timeout: 5000,
     titleColor: '#fff',
     titleSize: '16px',
-    iconUrl: errIcon,
+    iconUrl: icon,
     buttons: [
       [
         `<button style="background: transparent; padding: 0; margin-left: 30px" width="20" height="20"><img src=${closeIcon}></button>`,
@@ -73,9 +96,15 @@ function showRedToast() {
     close: false,
   });
 }
-function showLoader() {
-  loader.setAttribute('style', 'display: flex;');
+function showRedToast() {
+  const text = `Sorry, there are no images matching<br>your search query. Please, try again!`;
+  const color = '#EF4040';
+  const icon = errIcon;
+  showToast(text, color, icon);
 }
-function hideLoader() {
-  loader.setAttribute('style', 'display: none;');
+function showToastThatsIt() {
+  const text = `No more photos found`;
+  const color = '#FFA000';
+  const icon = '';
+  showToast(text, color, icon);
 }
