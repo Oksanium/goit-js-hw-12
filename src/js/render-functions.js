@@ -18,10 +18,10 @@ export function render(picsArr) {
                     <th>Downloads</th>
                 </tr>
                 <tr>
-                    <td>"${picObj.likes}"</td>
-                    <td>"${picObj.views}"</td>
-                    <td>"${picObj.comments}"</td>
-                    <td>"${picObj.downloads}"</td>
+                    <td>${picObj.likes}</td>
+                    <td>${picObj.views}</td>
+                    <td>${picObj.comments}</td>
+                    <td>${picObj.downloads}</td>
                 </tr>
             </table>
         </li>`;

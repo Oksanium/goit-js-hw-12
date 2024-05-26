@@ -86,7 +86,8 @@ input::placeholder {
 .card {
   width: 360px;
   height: 200px;
-  border: 1px solid #808080;
+  /* border: 1px solid #808080; */
+  box-shadow: 2px 1px 5px 1px rgba(0, 0, 0, 0.2);
 
 }
 .img-wrapper {

@@ -18,31 +18,34 @@ const modalOptions = {
 };
 const lightbox = new SimpleLightbox('.gallery a', modalOptions);
 
-const gallery = document.querySelector('.gallery');
 const loader = document.querySelector('.loader-wrapper');
+
+const gallery = document.querySelector('.gallery');
+
 const form = document.querySelector('.form');
 form.addEventListener('submit', onSubmit);
 
-function onSubmit(evt) {
+async function onSubmit(evt) {
   evt.preventDefault();
   gallery.innerHTML = '';
-
   const userQuery = form.querySelector('input').value;
   if (userQuery === '') return;
-  loader.setAttribute('style', 'display: flex;');
-  getPhotos(userQuery)
-    .then(res => res.json())
-    .then(data => {
-      if (data.hits.length === 0) {
-        throw new Error('no data');
-      }
+
+  showLoader();
+  try {
+    const { data } = await getPhotos(userQuery);
+    if (data.hits.length === 0) {
+      console.log('in if');
+      showRedToast();
+    } else {
       gallery.innerHTML = render(data.hits);
       lightbox.refresh();
-    })
-    .catch(e => showRedToast())
-    .finally(() => {
-      loader.setAttribute('style', 'display: none;');
-    });
+    }
+  } catch (err) {
+    console.log('in catch');
+    showRedToast();
+  }
+  hideLoader();
 }
 
 function showRedToast() {
@@ -70,10 +73,9 @@ function showRedToast() {
     close: false,
   });
 }
-
-// toast test
-
-// function onSubmitTest(event) {
-//     event.preventDefault();
-//     showRedToast();
-// }
+function showLoader() {
+  loader.setAttribute('style', 'display: flex;');
+}
+function hideLoader() {
+  loader.setAttribute('style', 'display: none;');
+}
