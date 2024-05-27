@@ -19,6 +19,7 @@ const lightbox = new SimpleLightbox('.gallery a', {
 
 const loader = document.querySelector('.loader-wrapper');
 const moreBtn = document.querySelector('.load-more');
+moreBtn.addEventListener('click', loadMore);
 const gallery = document.querySelector('.gallery');
 const form = document.querySelector('.form');
 form.addEventListener('submit', onSubmit);
@@ -41,7 +42,6 @@ async function buildGallery() {
   showElem(loader);
   try {
     const { data } = await getPhotos(userQuery, page);
-    console.log(data);
     if (data.hits.length === 0) {
       showRedToast();
     } else {
@@ -59,11 +59,18 @@ async function buildGallery() {
   hideElem(loader);
 }
 
-moreBtn.addEventListener('click', loadMore);
-
-function loadMore() {
+async function loadMore() {
+  const lastPic = document.querySelector('.gallery > li:last-child');
+  const scrolDist = Math.ceil(lastPic.getBoundingClientRect().bottom);
+  
   page += 1;
-  buildGallery();
+  await buildGallery();
+
+  window.scrollBy({
+    top: scrolDist,
+    behavior: "smooth",
+  });
+
 }
 function showElem(elem) {
   elem.setAttribute('style', 'display: flex;');
